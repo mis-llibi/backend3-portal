@@ -1,0 +1,74 @@
+<?php
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+
+/*
+  |--------------------------------------------------------------------------
+  | API Routes
+  |--------------------------------------------------------------------------
+  |
+  | Here is where you can register API routes for your application. These
+  | routes are loaded by the RouteServiceProvider within a group which
+  | is assigned the "api" middleware group. Enjoy building your API!
+  |
+*/
+
+use App\Http\Controllers\Members\ManageMemberController;
+use App\Http\Controllers\Members\ManageEnrolleeController;
+use App\Http\Controllers\Self_service_mobile\MobileAuthenticatedSessionController;
+use App\Http\Controllers\Self_enrollment\ManageSelfEnrollmentController as SelfEnrollmentController;
+use App\Http\Controllers\Dental_insurance\DentalInsuranceAuthController;
+use App\Http\Controllers\Dental_insurance\DentalInsuranceManageMemberController;
+use App\Http\Controllers\Da_extract\ManageDaMemberController;
+use App\Http\Controllers\Corporate\MembersController as CorporateMembers;
+use App\Http\Controllers\Self_service\AdminController as SelfService;
+
+Route::group(['middleware' => ['auth:sanctum']], function () {
+
+	Route::get('/user', function (Request $request) {
+		if ($request->user()->status == 1) return $request->user();
+		return response()->json([
+			'message' => 'account is inactive'
+		], 404);
+	});
+
+	//HR ENROLLMENT
+	Route::get('/get-enrollees/{status}', [ManageEnrolleeController::class, 'getEnrollees']);
+	Route::get('/get-correction/{id}', [ManageEnrolleeController::class, 'getCorrection']);
+
+	//SELF ENROLLMENT ADMIN
+	Route::get('/self-enrollment/get-submitted-and-approved-clients/{memberid}/{company}', [SelfEnrollmentController::class, 'getSubmittedAndApprovedClients']);
+	Route::get('/self-enrollment/get-all-principal-clients/{status}/{company}', [SelfEnrollmentController::class, 'getAllPrincipalClients']);
+	Route::get('/self-enrollment/export-clients/{company}', [SelfEnrollmentController::class, 'exportClients']);
+
+	//SELF ENROLLMENT FOR LIFE INSURANCE
+	Route::get('/self-enrollment/get-clients-for-life-insurance/{status}', [SelfEnrollmentController::class, 'getClientsForLifeInsurance']);
+
+});
+
+Route::get('/self-enrollment/testing', [SelfEnrollmentController::class, 'testing']);
+
+//SELF ENROLLMENT CLIENTS
+Route::get('/self-enrollment/get-client-info/{id}/{company}', [SelfEnrollmentController::class, 'checkClient']);
+Route::get('/self-enrollment/get-uploaded-files/{id}', [SelfEnrollmentController::class, 'getFiles']);
+Route::get('/self-enrollment/check-reminders/{company}/{date}/{finalWarning}/{locked}', [SelfEnrollmentController::class, 'checkReminders']);
+
+//SELF-SERVICE
+Route::get('/self-service/download-pdf', [SelfService::class, 'encryptPdf']);
+Route::get('/self-service/get-uploaded-files/{id}', [SelfService::class, 'getFiles']);
+Route::get('/self-service/admin-search-request/{search}/{id}', [SelfService::class, 'SearchRequest']);
+
+//MOBILE SELF-SERVICE LOGIN
+Route::get('/user-mobile', [MobileAuthenticatedSessionController::class, 'checkSession']);
+
+//DENTAL INSURANCE
+Route::get('/dental-insurance/member', [DentalInsuranceAuthController::class, 'checkSession']);
+Route::get('/dental-insurance/{enrolled}', [DentalInsuranceManageMemberController::class, 'viewMembers']);
+
+//DA EXTRACT
+Route::get('/da-extract-members', [ManageDaMemberController::class, 'getMembers']);
+
+//CORPORATE API
+Route::get('/corporate/employees/{lastname}', [CorporateMembers::class, 'GetEmployees']);
+Route::get('/corporate/dependents/{lastname}', [CorporateMembers::class, 'GetDependents']);

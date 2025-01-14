@@ -1,0 +1,3 @@
+*.sqlite*
+
+# https://stackoverflow.com/questions/35115541/laravel-5-skip-migrations
