@@ -7,7 +7,7 @@ use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-use App\Models\SelfService\MobileLogin;
+use App\Models\Self_service\MobileLogin;
 
 class MobileAuthenticatedSessionController extends Controller
 {
@@ -17,7 +17,7 @@ class MobileAuthenticatedSessionController extends Controller
      * @param  \App\Http\Requests\Auth\LoginRequest  $request
      * @return \Illuminate\Http\Response
      */
-    
+
     public function store(LoginRequest $request)
     {
         $client = MobileLogin::where('member_id', strtoupper($request->member_id))
@@ -27,7 +27,7 @@ class MobileAuthenticatedSessionController extends Controller
         if(count($client) > 0) {
             session(['access' => 'logged in', 'user' => $client[0]]);
             $request->session()->regenerate();
-            return date('Y-m-d', strtotime($request->birth_date)); 
+            return date('Y-m-d', strtotime($request->birth_date));
             //response()->noContent();
         } else {
             return response()->json([
